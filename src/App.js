@@ -3,7 +3,6 @@ import axios from "axios";
 import Select from "react-select";
 import "./App.css";
 
-// Multi-select dropdown options
 const options = [
   { value: "alphabets", label: "Alphabets" },
   { value: "numbers", label: "Numbers" },
@@ -33,9 +32,30 @@ export default function App() {
   };
 
   const renderFilteredResponse = () => {
-    if (!responseData) return null;
+    if (!responseData) {
+      return <p>Invalid</p>;
+    }
+  
+    // Check if 'data' exists and if any string in 'data' array has more than one character
+    const data = responseData.data || [];
+    const isInvalidData = data.some(item => item.length > 1);
+
+    // If any item in data is invalid, all filter responses should be invalid
+    if (isInvalidData) {
+      return (
+        <div>
+          <h3>Filter Response</h3>
+          <p>Invalid</p>
+        </div>
+      );
+    }
 
     const selectedValues = selectedFilters.map(option => option.value);
+
+    const combineAlphabets = (alphabets, highestAlphabets) => {
+      const allAlphabets = [...new Set([...alphabets, ...highestAlphabets].map(char => char))];
+      return allAlphabets.join(', ');
+    };
 
     return (
       <div>
@@ -44,26 +64,26 @@ export default function App() {
           {selectedValues.includes("alphabets") && (
             <div>
               <h4>Alphabets</h4>
-              <p>{responseData.alphabets.join(', ')}</p>
+              <p>{combineAlphabets(responseData.alphabets, responseData.highest_alphabet)}</p>
             </div>
           )}
           {selectedValues.includes("numbers") && (
             <div>
               <h4>Numbers</h4>
-              <p>{responseData.numbers.join(', ')}</p>
+              <p>{responseData.numbers.length > 0 ? responseData.numbers.join(', ') : 'Invalid'}</p>
             </div>
           )}
           {selectedValues.includes("highest_alphabet") && (
             <div>
               <h4>Highest Alphabet</h4>
-              <p>{responseData.highest_alphabet.join(', ')}</p>
+              <p>{combineAlphabets([], responseData.highest_alphabet)}</p>
             </div>
           )}
         </div>
       </div>
     );
   };
-
+  
   return (
     <div className="App">
       <h1>API Input</h1>
